@@ -12,14 +12,14 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-
+# Función que descarga y carga los pesos preentrenados de GPT-2
 def download_and_load_gpt2(model_size, models_dir):
-    # Validate model size
+    # Verifica que el tamaño del modelo esté permitido
     allowed_sizes = ("124M", "355M", "774M", "1558M")
     if model_size not in allowed_sizes:
         raise ValueError(f"Model size not in {allowed_sizes}")
 
-    # Define paths
+     # Define ruta local para guardar el modelo y URLs base para descarga
     model_dir = os.path.join(models_dir, model_size)
     base_url = "https://openaipublic.blob.core.windows.net/gpt-2/models"
     backup_base_url = "https://f001.backblazeb2.com/file/LLMs-from-scratch/gpt2"
@@ -37,14 +37,14 @@ def download_and_load_gpt2(model_size, models_dir):
         file_path = os.path.join(model_dir, filename)
         download_file(file_url, file_path, backup_url)
 
-    # Load settings and params
+     # Encuentra el checkpoint más reciente y carga settings y pesos
     tf_ckpt_path = tf.train.latest_checkpoint(model_dir)
     settings = json.load(open(os.path.join(model_dir, "hparams.json"), "r", encoding="utf-8"))
     params = load_gpt2_params_from_tf_ckpt(tf_ckpt_path, settings)
 
     return settings, params
 
-
+# Función que gestiona la descarga de un archivo con verificación
 def download_file(url, destination, backup_url=None):
     def _attempt_download(download_url):
         response = requests.get(download_url, stream=True, timeout=60)
@@ -122,9 +122,9 @@ def download_file(url, destination):
                 file.write(chunk)  # Write the chunk to the file
 """
 
-
+# Función que carga y organiza los pesos desde el checkpoint
 def load_gpt2_params_from_tf_ckpt(ckpt_path, settings):
-    # Initialize parameters dictionary with empty blocks for each layer
+    # Crea el diccionario 'params' con un bloque vacío para cada capa del modelo
     params = {"blocks": [{} for _ in range(settings["n_layer"])]}
 
     # Iterate over each variable in the checkpoint
