@@ -10,6 +10,9 @@ import time
 import pandas as pd
 import tiktoken
 import torch
+# Import Dynamo before TensorFlow is loaded by gpt_download to avoid
+# Triton/TensorFlow initialization crash on Linux aarch64
+import torch._dynamo  # noqa: F401
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 
@@ -225,7 +228,7 @@ def train_classifier_simple(model, train_loader, val_loader, optimizer, device, 
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--model_size",
         type=str,
@@ -261,7 +264,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--average_embeddings",
-        action='store_true',
+        action="store_true",
         default=False,
         help=(
             "Average the output embeddings from all tokens instead of using"
